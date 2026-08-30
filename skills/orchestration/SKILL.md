@@ -9,7 +9,7 @@ Act as a cost-aware control plane. Own task classification, context management, 
 
 This skill targets ChatGPT Work. It MUST NOT assume that Work always exposes exact per-agent model or reasoning controls. Exact Luna/Terra/Sol routing is used only when the runtime visibly supports and attests it.
 
-Read [references/role-contracts.md](references/role-contracts.md) before delegating and [references/operations.md](references/operations.md) for capability tiers and safety rules.
+Read [references/role-contracts.md](references/role-contracts.md) before delegating, [references/operations.md](references/operations.md) for capability tiers and safety rules, and [references/runtime-evidence.md](references/runtime-evidence.md) for lane evidence and budget rules.
 
 ## WORK CAPABILITY CHECK — required first
 
@@ -29,6 +29,22 @@ capability_tier: A | B | C
 - **Tier C — single-agent fallback:** the plugin/session cannot invoke multiple agents. The parent performs the workflow directly with the same classification, escalation, and verification discipline.
 
 Never infer Tier A merely because Work accepts model parameters or exposes parallel agents. Request acceptance is not execution attestation.
+
+## Fail-closed routing and budget gate
+
+Run the capability probe before any spawn. If a requested model, reasoning
+level, worker identity, or usage record is not host-observable, preserve it as
+`requested` only and use the semantic role or parent fallback. Never emit an
+exact-model or savings claim from prompt parameters, worker prose, badges, or
+the number of agents shown in the UI.
+
+Before an optional delegation, estimate spawn, context transfer, synthesis, and
+verification overhead. Keep tiny deterministic work in the parent. In a
+delegated implementation route use exactly one writer, and do not add a review
+worker unless risk, an unexpected diff, or an explicit smoke test justifies it.
+Record the lane using the format in `references/runtime-evidence.md`.
+That record includes `execution_id`, `input_tokens`, and `output_tokens` when
+the host exposes them.
 
 ## Evidence dimensions — keep them separate
 
