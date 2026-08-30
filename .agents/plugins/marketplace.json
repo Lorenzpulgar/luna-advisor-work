@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "luna-advisor-work",
-      "source": {"source": "local", "path": "."},
+      "source": {"source": "local", "path": "./plugins/luna-advisor-work"},
       "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
       "category": "Productivity"
     }
