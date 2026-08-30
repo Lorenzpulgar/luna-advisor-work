@@ -2,24 +2,24 @@
 
 **A cost-efficient AI team for ChatGPT Work.**
 
-Luna Advisor Work organizes GPT-5.6 Luna, Terra, and Sol like a small team. Instead of using the most powerful model for every step, it starts with the most economical model and only brings in more intelligence when the task truly needs it.
-
-The main idea is simple: **Luna coordinates everyday work, Terra handles substantial implementation, and Sol is called for difficult decisions or critical review.**
+Luna Advisor Work organizes work like a small AI team. The preferred architecture is: **Luna coordinates everyday work, Terra handles substantial implementation, and Sol enters for difficult decisions or critical review.** Exact model assignment is used only when the current Work runtime exposes and verifies those controls.
 
 ## Why it exists
 
-Many real tasks contain a mix of easy and difficult work. Researching files, making routine edits, organizing information, implementing a normal feature, and deciding a risky architecture are not the same kind of problem.
+Many tasks mix easy work with difficult work. Researching files, making routine edits, implementing a feature, and deciding a risky architecture do not require the same level of reasoning.
 
-Using Sol for every single step can be unnecessary. Luna Advisor Work tries to keep quality high while spending stronger reasoning only where it has the most value.
-
-This makes it an **efficiency-first** orchestrator.
+Luna Advisor Work is **efficiency-first**: it tries to use lighter reasoning for predictable work and stronger reasoning only when the task shape justifies it.
 
 ## Meet the AI team
 
-- **Luna — Coordinator and everyday worker.** Understands the task, organizes context, chooses the right specialist, handles routine work, combines results, and checks the final outcome.
-- **Terra — Main implementer.** Handles medium and difficult execution that needs stronger judgment, integration, or debugging.
-- **Sol — Senior architect and problem solver.** Enters when the problem is ambiguous, high-impact, difficult to reverse, or requires deep reasoning.
-- **Fresh Sol — Independent reviewer.** For critical outcomes, a new Sol session can review the result from a clean perspective.
+When Work exposes exact model routing, the preferred roles are:
+
+- **Luna — Coordinator and everyday worker.** Organizes context, classifies the task, combines results, and verifies the outcome.
+- **Terra — Main implementer.** Handles medium and difficult execution that needs more judgment, integration, or debugging.
+- **Sol — Senior architect and problem solver.** Enters for ambiguous, high-impact, hard-to-reverse, or deeply complex decisions.
+- **Fresh Sol — Independent reviewer.** Reviews critical outcomes in a separate workstream when Work can provide it.
+
+If Work does not expose exact model routing, the same workflow uses generic roles rather than pretending a hidden worker is Luna, Terra, or Sol.
 
 ## How it works
 
@@ -28,7 +28,7 @@ This makes it an **efficiency-first** orchestrator.
                            │
                            ▼
                     ┌─────────────┐
-                    │    LUNA     │
+                    │   PARENT    │
                     │ Coordinator │
                     └──────┬──────┘
                            │
@@ -37,71 +37,63 @@ This makes it an **efficiency-first** orchestrator.
    Simple/routine      Medium work       Complex decision
         │                  │                  │
         ▼                  ▼                  ▼
-      LUNA               TERRA               SOL
-   Light/Medium          Medium/High          High
+   light worker       implementer       specialist
         │                  │                  │
-        │                  │          Sol defines the plan
+        │                  │          specialist defines plan
         │                  │                  │
         │                  ◄──────────────────┘
         │                  │
         └──────────────────┴───────────────┐
                                            ▼
-                                     LUNA verifies
+                                    Parent verifies
                                            │
                                       Critical task?
                                        /         \
                                      No           Yes
                                      │             │
-                                    DONE      Fresh SOL review
+                                    DONE    Independent review
 ```
 
-In plain English:
+When exact model control is available, those roles map to Luna, Terra, and Sol. Otherwise, the role contracts remain the same without unsupported model claims.
 
-1. **Luna looks at the task and decides how difficult it is.**
-2. Simple and repetitive work stays with Luna.
-3. Normal non-trivial implementation goes to Terra.
-4. Difficult architecture, unclear root causes, or high-impact decisions go to Sol.
-5. When possible, Sol makes the difficult decision and Terra performs the implementation. This avoids using Sol for routine execution after the hard thinking is already finished.
-6. Luna checks the actual result.
-7. Critical work can receive an independent review from a fresh Sol.
+## Three Work capability levels
+
+Every run begins with a capability check:
+
+- **Tier A — Exact routing.** Work exposes multi-agent execution and enough evidence to select the intended worker model. Luna/Terra/Sol names may be used when verified.
+- **Tier B — Work multi-agent.** Work can run parallel agents, but exact worker model identity is not guaranteed. The plugin uses roles such as `implementation-worker` and `complex-specialist`.
+- **Tier C — Safe fallback.** The plugin cannot access multiple agents. The parent performs the same structured workflow directly and reports that delegation was unavailable.
+
+This prevents the plugin from claiming a model, reasoning level, fresh context, or sandbox guarantee that Work did not prove.
 
 ## The five task levels
 
-Luna Advisor Work classifies work into five easy-to-understand levels:
-
-- **Mechanical** — repetitive or highly predictable work. Usually Luna with light reasoning.
-- **Routine** — clearly defined everyday work. Usually Luna with medium reasoning.
-- **Medium** — normal implementation, integration, moderate debugging, or work requiring local judgment. Usually Terra.
-- **Complex** — architecture, difficult root-cause analysis, conflicting requirements, or decisions that affect many later steps. Usually Sol for the decision, then Terra for implementation when appropriate.
-- **Critical** — security, destructive changes, financial correctness, difficult concurrency, irreversible migrations, or similarly high-impact work. Sol is required for the key decision and a fresh Sol review may be added.
+- **Mechanical** — repetitive or highly predictable work. Tier A prefers Luna/light.
+- **Routine** — clearly defined everyday work. Tier A prefers Luna/medium.
+- **Medium** — normal implementation, integration, moderate debugging, or local judgment. Tier A prefers Terra/medium.
+- **Complex** — architecture, difficult root-cause analysis, conflicting requirements, or high-impact upstream decisions. Tier A prefers Sol/high for the decision, then Terra for implementation when appropriate.
+- **Critical** — security, destructive changes, financial correctness, difficult concurrency, irreversible migrations, or similarly high-impact work. Use the strongest independent path the current runtime can actually prove.
 
 ## Why Sol is not used all the time
 
-Sol is most valuable when a mistake in reasoning would affect everything that comes after it.
-
-For example:
+The goal is not to avoid Sol. The goal is to **use stronger reasoning where it changes the outcome most**.
 
 ```text
-Bad use of Sol:
-Sol reads files → Sol renames things → Sol writes boilerplate → Sol runs routine checks
-
-Better use of Sol:
-Luna organizes the task
+Efficient pattern:
+Parent organizes the task
         ↓
-Sol solves the difficult architectural decision
+Complex specialist solves the difficult decision
         ↓
-Terra implements the agreed plan
+Implementation worker executes the agreed plan
         ↓
-Luna verifies the result
+Parent verifies the result
 ```
 
-The goal is not to avoid Sol. The goal is to **use Sol where stronger reasoning creates the biggest improvement**.
+In Tier A, that preferred pattern becomes Luna → Sol → Terra → Luna verification.
 
-## Safety valve: Luna cannot keep every task for itself
+## Safety valve: the economical coordinator cannot keep every task
 
-A cheaper coordinator has one important risk: it might underestimate how difficult a task really is.
-
-To reduce that risk, Luna Advisor Work has mandatory escalation rules. Luna must bring in Sol when important issues such as these appear:
+Luna Advisor Work has mandatory escalation triggers. The complex path is required when important issues such as these appear:
 
 - unclear or conflicting architecture;
 - security, authentication, or authorization;
@@ -113,85 +105,62 @@ To reduce that risk, Luna Advisor Work has mandatory escalation rules. Luna must
 - decisions whose mistakes would affect many later workers;
 - an explicit request for maximum-quality reasoning.
 
-So the system does not depend only on Luna saying, “I think I can handle this.”
+The system therefore does not depend only on the coordinator's confidence.
 
 ## Parallel research, controlled implementation
 
-Like Sol Advisor Work, Luna Advisor Work can ask several agents to investigate independent parts of a problem at the same time.
-
 ```text
 Research:        Scout A ─┐
-                 Scout B ─┼──► Luna combines findings
+                 Scout B ─┼──► Parent combines findings
                  Scout C ─┘
 
-Implementation:             ► One writer ► Luna verifies
+Implementation:             ► One writer ► Parent verifies
 ```
 
-Parallel work is useful for reading documents, exploring repositories, comparing alternatives, collecting evidence, or finding missing tests.
-
-For changes to shared files or artifacts, Luna Advisor Work normally prefers **one writer at a time** so agents do not overwrite or contradict each other.
-
-## Recommended path for a difficult task
-
-```text
-Luna coordinates
-      ↓
-Parallel research if useful
-      ↓
-Sol / High solves the difficult decision
-      ↓
-Terra / Medium or High implements the plan
-      ↓
-Luna verifies the result
-      ↓
-Fresh Sol reviews if the outcome is critical
-```
-
-This is the core philosophy of Luna Advisor Work: **cheap coordination, strong implementation, frontier reasoning only when needed.**
+Parallel work is encouraged for independent reading, repository exploration, comparisons, evidence collection, and test-gap analysis. Shared-state changes normally use **one writer at a time**.
 
 ## Designed for ChatGPT Work
 
-Luna Advisor Work is designed around **ChatGPT Work hosted subagents** rather than local Codex custom-agent files.
+Luna Advisor Work targets Work's hosted execution model rather than Codex-local custom-agent TOML files. It deliberately avoids depending on local rollout inspectors or unproven per-agent sandbox guarantees.
 
-It focuses on:
+## Technical reliability
 
-- choosing the right model for the shape of the task;
-- keeping everyday coordination inexpensive;
-- parallel research and exploration;
-- escalating difficult reasoning to Sol;
-- using Terra as the main implementation workhorse;
-- keeping shared-state changes controlled;
-- verifying worker claims instead of blindly trusting them;
-- independent review for critical outcomes.
+The repository includes:
 
-It does not claim per-agent sandbox isolation or hard model guarantees unless Work actually exposes that evidence.
+- the standard `.agents/plugins/marketplace.json` entry;
+- an installable package under `plugins/luna-advisor-work/`;
+- `.codex-plugin/plugin.json` and skill metadata following the OpenAI plugin layout;
+- an explicit A/B/C runtime capability gate;
+- mandatory escalation triggers for high-impact work;
+- scoped worker contracts and parent verification rules;
+- serialized shared-state writers;
+- GitHub Actions verification via `scripts/verify.py` to detect missing files, invalid JSON, package drift, bad marketplace paths, oversized starter prompts, and missing capability-contract markers.
+
+Static packaging can be validated by CI. Exact multi-model routing remains a runtime capability of ChatGPT Work and is never falsely presented as a repository-level guarantee.
 
 ## Luna Advisor Work vs. Sol Advisor Work
 
-Both projects use the same family of models, but they optimize for different priorities.
-
 | | Luna Advisor Work | Sol Advisor Work |
 |---|---|---|
-| Main coordinator | Luna | Sol |
-| Main priority | Efficiency | Maximum quality |
-| Simple work | Luna | Luna when delegated |
-| Medium implementation | Terra | Terra when delegated |
-| Complex reasoning | Escalate to Sol | Sol already leads |
-| Critical review | Fresh Sol | Fresh Sol |
+| Main philosophy | Efficiency-first | Quality-first |
+| Easy work | Keep it light | Delegate when useful |
+| Medium implementation | Implementation worker | Implementation worker |
+| Complex reasoning | Escalate to specialist | Strong reasoning stays near the control plane |
+| Critical review | Independent review when available | Independent review when available |
 | Best fit | Frequent everyday workflows | Important or difficult workflows |
-
-A simple way to choose:
 
 **Use Luna Advisor Work when efficiency matters most.**  
 **Use Sol Advisor Work when maximum confidence matters most.**
 
 ## For technical users
 
-The public README intentionally keeps the explanation simple. The exact routing policy, mandatory escalation rules, worker contracts, verification behavior, and Work-specific safeguards live in:
+The complete routing and safety contracts live in:
 
 - `skills/orchestration/SKILL.md`
 - `skills/orchestration/references/role-contracts.md`
 - `skills/orchestration/references/operations.md`
+
+The installable copy is mirrored under `plugins/luna-advisor-work/`, and CI requires both copies to remain identical.
 
 ## Attribution
 
