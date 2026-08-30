@@ -1,4 +1,4 @@
 interface:
-  display_name: "Luna Advisor Work"
-  short_description: "Luna-led cost-aware Work orchestration with Terra execution and Sol escalation"
-  default_prompt: "Use $orchestration to classify this task, choose the cheapest safe lane, parallelize independent reads, serialize writes, and escalate complex decisions to Sol."
+  display_name: "Luna Advisor Work Orchestration"
+  short_description: "Efficiency-first Work routing with runtime capability checks and safe escalation"
+  default_prompt: "Use $orchestration. Run the WORK CAPABILITY CHECK first, then choose the cheapest safe route supported by this Work runtime."
