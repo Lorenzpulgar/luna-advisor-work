@@ -1,86 +1,92 @@
 # Luna Advisor Work operations
 
-This reference defines the cost-aware routing and verification rules for ChatGPT Work.
+This reference defines runtime-safe, cost-aware routing and verification for ChatGPT Work.
 
-## Work constraints
+## Capability tiers
 
-- Hosted subagents may accept requested model and reasoning controls when the host exposes them.
-- Subagents may inherit parent tools and permissions.
-- Do not depend on Codex-local custom-agent TOML registration, local runtime inspectors, or per-agent sandbox enforcement.
-- Parallelize independent read-heavy work; serialize shared-state writes.
-- Never claim model/effort/isolation evidence the host did not expose.
+Run the `WORK CAPABILITY CHECK` from `SKILL.md` first.
+
+| Tier | What is proven | Allowed routing claims |
+|---|---|---|
+| A | Multi-agent plus observable per-agent model routing | Exact Luna/Terra/Sol names; reasoning only if separately observable |
+| B | Multi-agent/parallel Work execution, exact worker model not proven | Semantic roles only |
+| C | No plugin-visible multi-agent execution | Parent-only execution; no delegation claims |
+
+Never infer Tier A from Work Ultra alone.
 
 ## Classification matrix
 
-| Class | Default model | Effort | Typical work |
+| Class | Tier A preferred lane | Tier B role | Tier C |
 |---|---|---|---|
-| mechanical | Luna | light | deterministic edits, extraction, formatting, simple wiring |
-| routine | Luna | medium | bounded execution with mostly settled solution |
-| medium | Terra | medium | non-trivial implementation, integration, moderate refactor/debugging |
-| complex | Sol | high | architecture, ambiguity, deep root-cause reasoning |
-| critical | Sol + Terra/Sol writer | high | high-impact or irreversible work, plus fresh Sol review when useful |
+| mechanical | Luna / light | mechanical-worker | parent |
+| routine | Luna / medium | routine-worker | parent |
+| medium | Terra / medium | implementation-worker | parent |
+| complex | Sol / high decision | complex-specialist | parent second-pass complex analysis |
+| critical | strongest proven path + independent review | specialist + reviewer | strict parent verification with limitation disclosed |
 
-## Mandatory Sol escalation
+## Mandatory complex escalation
 
-Escalate regardless of Luna confidence when the task materially involves architecture ambiguity,
-auth/authz or security design, destructive data migration, financial correctness, difficult
-concurrency/distributed state, wide interface changes, repeated unclear verification failure, or
-an upstream decision that would propagate across multiple workers.
+Escalate regardless of parent confidence when the task materially involves architectural ambiguity, auth/authz or security design, destructive data migration, financial correctness, difficult concurrency/distributed state, wide interface changes, repeated unclear verification failure, or an upstream decision that would propagate across multiple workers.
 
 ## Preferred complex pattern
+
+Tier A:
 
 ~~~text
 Luna parent
   -> parallel read scouts when useful
-  -> fresh Sol / high decision packet
-  -> Luna synthesizes and freezes architecture
+  -> Sol / high decision packet
+  -> parent freezes architecture
   -> Terra / medium or high implements as the single writer
-  -> Luna verifies observable state
-  -> fresh Sol review only if critical/high risk
+  -> parent verifies observable state
+  -> fresh Sol review only when justified and observable
 ~~~
 
-Do not pay Sol to perform routine execution after the hard decision is settled unless Terra is
-not sufficient.
+Tier B keeps the same shape but uses role names instead of model claims:
+
+~~~text
+Parent
+  -> parallel readers
+  -> complex-specialist
+  -> implementation-worker
+  -> parent verification
+  -> independent-reviewer when justified
+~~~
+
+Tier C executes the same logical phases in the parent and explicitly reports that specialist/reviewer independence was unavailable.
+
+## Work constraints
+
+- Subagents may inherit parent tools and permissions.
+- Do not depend on Codex-local custom-agent TOML registration, local runtime inspectors, or per-agent sandbox enforcement.
+- A model/reasoning request is not proof of actual routing.
+- Parallelize independent read-heavy work; serialize shared-state writes.
+- Never claim model/effort/freshness/isolation evidence the host did not expose.
 
 ## Parallel read pattern
 
-Good:
-
-~~~text
-Scout A: map interfaces/dependencies; no writes.
-Scout B: inspect tests/regressions; no writes.
-Scout C: research relevant documentation; no writes.
-Parent: synthesize and classify.
-Writer: one Luna/Terra/Sol implementation lane.
-~~~
-
-Avoid overlapping writers. If multiple writers are unavoidable, ownership must be disjoint and
-the parent must inspect the combined state.
+Use parallel readers only for independent questions and no mutation objective. Avoid overlapping writers. If multiple writers are unavoidable, ownership must be disjoint and the parent must inspect the combined state.
 
 ## Verification
 
-For delegated execution, the Luna parent should:
+For delegated execution, the parent should:
 
 1. inspect actual changed files/artifacts/state;
-2. compare the changed scope with ownership;
-3. rerun checks or equivalent validation when the current tools permit;
+2. compare changed scope with ownership;
+3. rerun checks or equivalent validation when tools permit;
 4. reconcile gaps and judgment calls;
-5. escalate when evidence shows higher complexity than initially classified;
-6. state any verification gap explicitly.
+5. escalate when evidence shows higher complexity;
+6. state verification gaps explicitly.
 
 ## Routing failure policy
 
-If a requested model/effort is unavailable or hidden:
+If a requested capability/model/effort is unavailable or hidden:
 
-- If the user required a hard pin, stop that lane and report the limitation.
-- Otherwise use the closest appropriate available lane only when doing so preserves task safety,
-  disclose the fallback, and do not claim the requested routing was verified.
+- hard guarantee required by user: stop that lane and report the limitation;
+- otherwise downgrade capability tier, preserve task safety, disclose the fallback, and never claim the requested routing was verified.
 
-If Luna cannot tell whether a task is medium or complex and the downstream cost of a wrong choice
-is meaningful, bias upward to a Sol consultation rather than guessing downward.
+If the parent cannot tell whether a task is medium or complex and a wrong choice has meaningful downstream cost, bias upward to the complex path rather than guessing downward.
 
 ## Review policy
 
-Fresh Sol review is for critical/high-risk outcomes, surprising implementation diffs, or tasks
-where context independence materially improves confidence. The reviewer is behaviorally read-only
-unless the host explicitly proves stronger isolation. Any correction invalidates the verdict.
+Independent review is for critical/high-risk outcomes, surprising implementation diffs, or tasks where context independence materially improves confidence. Tier A may name Sol only when verified. Tier B uses `independent-reviewer`. Tier C performs a disclosed parent second pass. Any correction invalidates the verdict.
