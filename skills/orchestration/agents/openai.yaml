@@ -1,0 +1,4 @@
+interface:
+  display_name: "Luna Advisor Work"
+  short_description: "Luna-led cost-aware Work orchestration with Terra execution and Sol escalation"
+  default_prompt: "Use $orchestration to classify this task, choose the cheapest safe lane, parallelize independent reads, serialize writes, and escalate complex decisions to Sol."
