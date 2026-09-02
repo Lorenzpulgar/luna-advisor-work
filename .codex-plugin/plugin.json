@@ -1,6 +1,6 @@
 {
   "name": "luna-advisor-work",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Cost-aware ChatGPT Work orchestration with capability-aware Luna/Terra/Sol escalation.",
   "author": {"name": "Lorenzpulgar", "url": "https://github.com/Lorenzpulgar"},
   "homepage": "https://github.com/Lorenzpulgar/luna-advisor-work#readme",
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "Luna Advisor Work",
     "shortDescription": "Efficiency-first orchestration that escalates intelligence only when Work can support it.",
-    "longDescription": "The economical parent classifies work and uses exact Luna/Terra/Sol routing only when Work exposes verifiable controls. Otherwise it safely uses semantic worker roles or a parent-only fallback, while preserving mandatory escalation, one-writer coordination, verification, and independent review semantics.",
+    "longDescription": "The economical parent classifies work and includes a Plus-only native proof contract for verifying orchestration without API or external MCP. Exact Luna/Terra/Sol execution is claimed only when Work exposes host attestation; otherwise the workflow safely uses honest Tier B semantic routing with mandatory escalation and verification.",
     "developerName": "Lorenzpulgar",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
