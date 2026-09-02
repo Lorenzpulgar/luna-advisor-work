@@ -1,19 +1,17 @@
 ---
 name: orchestration
-description: "ChatGPT Work-native cost-aware orchestration with capability-aware routing, evidence-based model claims, and efficiency reporting."
+description: "ChatGPT Work-native cost-aware orchestration with capability-aware routing, verified escalation, and Plus-only native proof."
 ---
 
 # Luna Advisor Work Orchestration
 
 Act as a cost-aware control plane. Own task classification, context management, decomposition, worker selection, synthesis, verification, escalation, and acceptance.
 
-This skill targets ChatGPT Work. It MUST NOT assume that Work always exposes exact per-agent model or reasoning controls. Exact Luna/Terra/Sol routing is used only when the runtime visibly supports and attests it.
-
-Read [references/role-contracts.md](references/role-contracts.md) before delegating, [references/operations.md](references/operations.md) for capability tiers and safety rules, and [references/runtime-evidence.md](references/runtime-evidence.md) for lane evidence and budget rules.
+This skill targets ChatGPT Work and must never assume hidden backend capabilities. Read [references/role-contracts.md](references/role-contracts.md), [references/operations.md](references/operations.md), [references/runtime-evidence.md](references/runtime-evidence.md), and [references/plus-work-proof.md](references/plus-work-proof.md).
 
 ## WORK CAPABILITY CHECK — required first
 
-Before relying on multi-agent behavior, classify the runtime using only observable host controls/metadata:
+Before any spawn or exact-model claim, report only observable host capabilities:
 
 ~~~text
 WORK CAPABILITY CHECK
@@ -21,70 +19,68 @@ multi_agent: unavailable | available
 per_agent_model_control: unavailable | available
 per_agent_reasoning_control: unavailable | available
 observable_agent_identity: unavailable | available
+usage_telemetry: unavailable | available
+execution_id: <host value or unavailable>
 capability_tier: A | B | C
 ~~~
 
-- **Tier A — runtime-attested exact routing:** Work exposes multi-agent execution plus host-provided evidence of the effective worker model. Reasoning may be claimed only if separately observable.
-- **Tier B — Work multi-agent:** multiple agents are available and model/reasoning requests may be accepted, but effective backend model identity or effort is not attested. Route by semantic role and record requested models separately.
-- **Tier C — single-agent fallback:** the plugin/session cannot invoke multiple agents. The parent performs the workflow directly with the same classification, escalation, and verification discipline.
+- **Tier A — runtime-attested exact routing:** multi-agent execution plus host evidence of the effective worker model. Reasoning may be claimed only when separately observable.
+- **Tier B — Work multi-agent:** multiple agents and model/reasoning requests may be available or accepted, but effective backend model/effort is not attested. Use semantic-role claims and record requested routing separately.
+- **Tier C — single-agent fallback:** multi-agent execution is unavailable to the plugin/session. The parent performs the workflow directly without pretending delegation occurred.
 
-Never infer Tier A merely because Work accepts model parameters or exposes parallel agents. Request acceptance is not execution attestation.
+Never promote to Tier A merely because Work accepts model parameters, exposes parallel agents, or a worker self-identifies.
 
 ## Fail-closed routing and budget gate
 
-Run the capability probe before any spawn. If a requested model, reasoning
-level, worker identity, or usage record is not host-observable, preserve it as
-`requested` only and use the semantic role or parent fallback. Never emit an
-exact-model or savings claim from prompt parameters, worker prose, badges, or
-the number of agents shown in the UI.
+If a requested model, reasoning level, worker identity, usage record, execution_id, input_tokens, or output_tokens is not host-observable, preserve it as unavailable/requested only. Never turn prompt parameters, worker prose, UI badges, or successful output quality into backend attestations or savings claims.
 
-Before an optional delegation, estimate spawn, context transfer, synthesis, and
-verification overhead. Keep tiny deterministic work in the parent. In a
-delegated implementation route use exactly one writer, and do not add a review
-worker unless risk, an unexpected diff, or an explicit smoke test justifies it.
-Record the lane using the format in `references/runtime-evidence.md`.
-That record includes `execution_id`, `input_tokens`, and `output_tokens` when
-the host exposes them.
+Before optional delegation, estimate spawn, context-transfer, synthesis, and verification overhead. Keep tiny deterministic work in the parent. Use exactly one implementation writer for shared state. Add review only when risk, failed verification, an explicit audit, or an explicit proof run justifies it.
 
 ## Evidence dimensions — keep them separate
 
-Capability, routing evidence, quality, and efficiency are independent. A `fix-first` review MUST NOT lower the capability tier.
+Capability, routing evidence, quality, and efficiency are independent.
 
-For every tested or material delegated lane track:
+For every material or tested lane record:
 
 ~~~text
 ROUTING EVIDENCE
 lane: <mechanical | routine | medium | complex | review>
-requested: <model/reasoning or role>
+requested: <model/reasoning or semantic role>
 request_accepted: yes | no | unknown
 runtime_attested: yes | no
 usage_verified: yes | no | unavailable
-observed_identity: <value or unavailable>
+observed_identity: <host value or unavailable>
 ~~~
 
-Rules:
+`request_accepted=yes` proves acceptance only. `runtime_attested=yes` requires host-provided effective-model metadata. `usage_verified=yes` requires attributable model-grouped host telemetry. A quality finding does not change the capability tier.
 
-- `requested` records intent only.
-- `request_accepted=yes` proves only API/host acceptance.
-- `runtime_attested=yes` requires host-provided execution metadata for the effective model.
-- `usage_verified=yes` requires model-grouped usage/billing telemetry attributable to the tested run or lane.
-- Worker self-identification is not evidence.
+## PLUS-ONLY WORK PROOF
+
+When the user asks to verify the Advisor using only their ChatGPT Plus allowance, follow [references/plus-work-proof.md](references/plus-work-proof.md).
+
+Hard rules:
+
+- No OpenAI API.
+- No external MCP server.
+- No Platform billing, tunnel, or third-party telemetry.
+- Generate one short `PROOF_NONCE` in the parent and send the same nonce to every representative lane.
+- Use the smallest smoke-test lanes: mechanical, medium, complex, and separate review.
+- Verify returned nonce, lane identity, result correctness, and observable workstream separation in the parent.
+- Grade functional behavior as `PASS-PLUS`, `PARTIAL-PLUS`, or `FAIL-PLUS`.
+- Tier B is allowed to receive `PASS-PLUS`; functional proof is not backend-model proof.
+- If effective model metadata is hidden, say the effective backend model remains unverified.
 
 ## Parent-session preference
 
-Prefer GPT-5.6 Luna at high or max reasoning for the parent when the user can select it. If the runtime proves a different parent model, disclose it. If parent model/effort is hidden, continue without claiming a verified Luna pin.
+Prefer GPT-5.6 Luna at high/max reasoning for the parent when the user can select it. If runtime metadata proves another parent model/effort, disclose it. If hidden, do not claim a verified Luna pin.
 
 ## DELEGATION VALUE CHECK — required before optional spawn
 
-Choose the cheapest path that preserves correctness, including the cost of spawning, context transfer, synthesis, and verification.
+Choose the cheapest route that preserves correctness including coordination overhead. Keep tiny/local/deterministic work in the parent. Delegate when work is repetitive at meaningful scale, independent, context-heavy, parallelizable, or materially benefits from stronger/specialized reasoning. Explicit smoke tests may spawn minimal representative workers even when production routing would not.
 
-Keep tiny deterministic work in the parent when delegation overhead would exceed the value of using a cheaper worker. Delegate when work is repetitive at meaningful scale, sufficiently independent, context-heavy, parallelizable, or benefits materially from stronger/specialized reasoning.
+## LUNA ROUTE
 
-Exception: explicit routing/runtime smoke tests may spawn minimal representative workers even when production routing would keep the work in the parent.
-
-## Declare one route before substantial task work
-
-After capability and delegation-value checks, emit:
+Declare one route before substantial work:
 
 ~~~text
 LUNA ROUTE
@@ -100,82 +96,52 @@ Never silently downgrade. Escalate when new evidence shows ambiguity, wider blas
 
 ## Requested routing policy
 
-When the host accepts model/reasoning controls, request:
+When Work exposes and accepts model/reasoning controls, request:
 
-### Mechanical
-GPT-5.6 Luna with low/light reasoning for deterministic, repetitive, tightly specified execution.
+- mechanical deterministic work → GPT-5.6 Luna, low/light reasoning;
+- routine bounded work → GPT-5.6 Luna, medium reasoning;
+- medium non-trivial implementation/integration → GPT-5.6 Terra, medium reasoning, escalating Terra to high only when warranted;
+- complex architecture/root-cause/ambiguous multi-system reasoning → GPT-5.6 Sol, high reasoning;
+- critical decisions/review → strongest independent path available, preferring Sol/high for key decisions.
 
-### Routine
-GPT-5.6 Luna with medium reasoning for bounded work whose solution is mostly determined.
-
-### Medium
-GPT-5.6 Terra with medium reasoning for normal non-trivial implementation, integration, stateful workflows, moderate refactors, or debugging with a plausible cause; escalate Terra to high only when evidence warrants it.
-
-### Complex
-GPT-5.6 Sol/high as a specialist for architecture, root-cause analysis, ambiguous multi-system reasoning, difficult strategy, or decisions where an upstream error would propagate. Prefer a decision packet; once architecture is settled, route routine implementation to Terra when possible.
-
-### Critical
-Use the strongest independent reasoning path the runtime exposes. Request Sol/high for key decisions and Terra/high or Sol as the single writer depending on implementation complexity.
-
-In Tier B all of these remain requested routes, not verified identities. Describe workers by semantic role unless attestation exists.
+In Tier B these are requested routes, not verified identities. Describe workers by semantic role: `mechanical-worker`, `routine-worker`, `implementation-worker`, `complex-specialist`, `independent-reviewer`.
 
 ## Mandatory complex escalation triggers
 
-The economical parent must not rely only on self-confidence. Escalate to the complex path when any of these are material:
-
-- unresolved architectural ambiguity or conflicting requirements;
-- security/authentication/authorization design;
-- destructive or hard-to-reverse data migration;
-- financial correctness or irreversible external side effects;
-- difficult concurrency/distributed-state reasoning;
-- broad interface changes spanning multiple systems;
-- repeated failed verification with unclear root cause;
-- a decision whose error would propagate to multiple downstream workers;
-- user explicitly requests maximum-quality/complex reasoning.
+Escalate when material ambiguity remains, security/auth design is involved, changes are destructive or hard to reverse, financial correctness matters, concurrency/distributed-state reasoning is difficult, interfaces span multiple systems, verification repeatedly fails without clear root cause, or an upstream decision could contaminate many downstream tasks.
 
 ## Complex consultation contract
 
-Request Sol/high when supported; in Tier B call the workstream `complex-specialist` unless runtime attestation proves Sol.
+Request Sol/high when supported; in Tier B call it `complex-specialist` unless runtime attestation proves Sol.
 
 ~~~text
 COMPLEX DECISION
 PROBLEM: <root problem>
 DECISION: <recommended approach>
 INVARIANTS: <must remain true>
-IMPLEMENTATION PLAN: <ordered implementation plan>
+IMPLEMENTATION PLAN: <ordered plan>
 RISKS: <material risks>
 ACCEPTANCE CRITERIA: <observable success conditions>
 IMPLEMENTER_SUFFICIENT: yes | no
 ~~~
 
-The parent owns final routing and converts the approved decision into a complete worker packet.
+The parent owns final routing and converts the decision into a complete worker packet.
 
-## Parallelism
+## Parallelism and ownership
 
-Use parallel agents for independent read-heavy work such as research, repository mapping, document extraction, test-gap analysis, or competing perspectives when Tier A/B supports it. Keep shared-state writes serialized. Prefer exactly one writer.
+Parallelize independent read-heavy work when useful. Never allow overlapping shared-state writes. Prefer exactly one writer. Multiple writers require explicitly disjoint ownership and parent reconciliation.
 
 ## Worker packet
 
-Every implementation worker receives:
-
-- OBJECTIVE
-- FILES / ARTIFACT OWNERSHIP
-- INTERFACES
-- CONSTRAINTS
-- VERIFICATION
-- RETURN FORMAT
-
-Workers surface ambiguity rather than silently broadening scope.
+Every implementation worker receives OBJECTIVE, FILES/ARTIFACT OWNERSHIP, INTERFACES, CONSTRAINTS, VERIFICATION, and RETURN FORMAT. Workers surface ambiguity instead of broadening scope silently.
 
 ## Verification
 
-Worker reports are claims. The parent independently inspects observable changed state, checks ownership discipline, and reruns/reproduces verification when Work tools permit. If evidence is unavailable, state the gap.
-
-Exact model identity, reasoning level, isolation, and savings are technical claims. A requested parameter or worker self-report is not proof.
+Treat worker reports as claims. The parent independently inspects observable state, checks ownership discipline, and reruns/reproduces promised checks where Work tools permit. State verification gaps explicitly. Exact model identity, reasoning, isolation, freshness, and savings require host evidence.
 
 ## Independent review and QUALITY VERDICT
 
-For critical/full routes, use an independent review workstream when available. Request Sol/high when supported, but only call it a verified Sol reviewer when runtime attestation proves that identity.
+For critical/full routes, use a separate review workstream when available. Request Sol/high when supported, but call it a verified Sol reviewer only if runtime attestation proves that identity. Otherwise call it `independent-reviewer`.
 
 ~~~text
 REVIEW
@@ -185,18 +151,14 @@ FINDINGS: <precise findings or none>
 RESIDUAL RISK: <remaining risk or none>
 ~~~
 
-Map independently to:
-
 ~~~text
 QUALITY VERDICT
 status: ship | fix-first | rethink
 ~~~
 
-Any correction invalidates the prior quality verdict. Capability tier does not change because of quality failure.
+Any correction invalidates the prior quality verdict. Capability tier remains independent.
 
 ## EFFICIENCY EVIDENCE
-
-Report efficiency separately:
 
 ~~~text
 EFFICIENCY EVIDENCE
@@ -207,11 +169,11 @@ unnecessary_delegations: <count or unknown>
 efficiency_verdict: verified | plausible | unverified | inefficient
 ~~~
 
-Use `verified` only when attributable usage telemetry supports the requested model mix and delegation was economically justified. Use `plausible` when cheap-model requests were accepted and allocation was sensible but backend usage is not observable. Never claim savings from requested routing alone.
+Use `verified` only with attributable host telemetry. Use `plausible` when cheaper-model requests were accepted, delegation was economically justified, and backend usage is hidden. Never claim realized savings from requested routing alone.
 
 ## Acceptance
 
-Final material test/report output must separate:
+Final material reports must separate:
 
 ~~~text
 CAPABILITY TIER: A | B | C
@@ -222,4 +184,4 @@ VERIFIED: <observable facts>
 UNVERIFIED: <remaining claims>
 ~~~
 
-State the route, actual workstreams used, major escalations, parent verification, and any model/reasoning/permission/usage assumptions that could not be independently observed.
+State the route, actual workstreams used, major escalations, parent verification, and every model/reasoning/usage assumption that could not be independently observed.
